@@ -1,31 +1,189 @@
+/* ============================================================
+   RoadRunners Car Rental — Global Styles
+   Brand palette: #1F5082, #1E4D7B, #3A6086, #C2D1DF, #E46A28
+   ============================================================ */
+
+:root {
+    --rr-primary: #1F5082;
+    --rr-primary-dark: #1E4D7B;
+    --rr-primary-muted: #3A6086;
+    --rr-light: #C2D1DF;
+    --rr-accent: #E46A28;
+}
+
 html {
-  font-size: 14px;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html { font-size: 16px; }
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: #f4f6f9;
+    position: relative;
+}
+
+/* Full-page background with low opacity */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('/images/background.jpg') center center / cover no-repeat;
+    opacity: 0.08;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ---- Navbar ---- */
+.navbar-brand-rr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.navbar-brand-rr img {
+    height: 36px;
+    width: auto;
+}
+.navbar-rr {
+    background: linear-gradient(135deg, var(--rr-primary-dark), var(--rr-primary)) !important;
+}
+
+/* ---- Cards with brand accents ---- */
+.card {
+    border: none;
+    border-radius: 10px;
+}
+.card-header-rr {
+    background: var(--rr-primary) !important;
+    color: #fff !important;
+}
+.card-header-accent {
+    background: var(--rr-accent) !important;
+    color: #fff !important;
+}
+
+/* ---- Headings ---- */
+h1, h2, h3, h4, h5 {
+    color: var(--rr-primary-dark);
+}
+
+/* ---- Links brand color ---- */
+a {
+    color: var(--rr-primary);
+}
+a:hover {
+    color: var(--rr-accent);
+}
+
+/* ---- Tables with branded headers ---- */
+.table-header-rr > thead {
+    background: var(--rr-primary) !important;
+    color: #fff;
+}
+.table-header-rr > thead th {
+    background: var(--rr-primary) !important;
+    color: #fff !important;
+    border-color: var(--rr-primary-dark) !important;
+}
+
+/* ---- Footer ---- */
+.footer-rr {
+    background: var(--rr-primary-dark);
+    color: var(--rr-light);
+}
+.footer-rr a {
+    color: #fff;
+}
+
+/* ---- Stat cards ---- */
+.stat-card-primary h3 { color: var(--rr-primary) !important; }
+.stat-card-accent h3 { color: var(--rr-accent) !important; }
+
+/* ---- Focus / accessibility ---- */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--rr-primary);
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* ---- Welcome page hero ---- */
+.hero-section {
+    background: linear-gradient(135deg, rgba(31,80,130,0.92), rgba(30,77,123,0.85)),
+                url('/images/background.jpg') center center / cover no-repeat;
+    color: #fff;
+    padding: 60px 0;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+.hero-section h1 {
+    color: #fff;
+    font-size: 2.8rem;
+    font-weight: 700;
+}
+.hero-section p {
+    font-size: 1.15rem;
+    opacity: 0.9;
+}
+.hero-logo {
+    max-height: 120px;
+    width: auto;
+}
+
+/* Feature cards on welcome page */
+.feature-card {
+    border-left: 4px solid var(--rr-accent);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(31,80,130,0.15);
+}
+.feature-icon {
+    font-size: 2rem;
+    color: var(--rr-accent);
+}
+
+/* ---- Accent button ---- */
+.btn-accent {
+    background-color: var(--rr-accent);
+    border-color: var(--rr-accent);
+    color: #fff;
+}
+.btn-accent:hover {
+    background-color: #c95a1f;
+    border-color: #c95a1f;
+    color: #fff;
+}
+
+/* ---- Car card hover effect ---- */
+.car-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.car-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(31,80,130,0.18);
+}
+
+/* ---- Payment form styling ---- */
+#payment-form .form-control {
+    border-radius: 8px;
+}
+
+/* ---- License plate code styling ---- */
+code {
+    background: var(--rr-light);
+    color: var(--rr-primary-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
 }

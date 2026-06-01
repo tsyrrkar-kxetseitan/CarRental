@@ -1,0 +1,130 @@
+@model IEnumerable<RentalBooking>
+@{
+    ViewData["Title"] = "My Rentals";
+}
+
+<h1 class="mb-4">My Rentals</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <h5 class="alert-heading">No rentals yet!</h5>
+        <p class="mb-0">You haven't rented any cars yet. <a asp-action="Index" class="alert-link">Browse available cars</a> to get started.</p>
+    </div>
+}
+else
+{
+    var activeBookings = Model.Where(r => r.Status == "Active");
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover table-header-rr mb-0">
+                <thead>
+                    <tr>
+                        <th>Booking #</th>
+                        <th>Car</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Duration</th>
+                        <th>Price/Day</th>
+                        <th>Total Cost</th>
+                        <th>Booked On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rental in Model)
+                    {
+                        var duration = (rental.EndDate - rental.StartDate).Days;
+                        bool isCanceled = rental.Status == "Canceled" || rental.Status == "CanceledByAdmin";
+                        bool isActive = !isCanceled && rental.StartDate <= DateTime.Today && rental.EndDate >= DateTime.Today;
+                        bool isPast = !isCanceled && rental.EndDate < DateTime.Today;
+                        bool isFuture = !isCanceled && rental.StartDate > DateTime.Today;
+                        bool isCarDeleted = rental.Car?.IsDeleted == true;
+
+                        <tr class="@(isCanceled ? "table-light" : "")">
+                            <td><strong>#@rental.Id</strong></td>
+                            <td>
+                                @if (isCarDeleted)
+                                {
+                                    <span class="text-muted">@rental.Car?.Brand @rental.Car?.Model <em>(deleted)</em></span>
+                                }
+                                else
+                                {
+                                    <a asp-action="Details" asp-route-id="@rental.CarId">
+                                        @rental.Car?.Brand @rental.Car?.Model
+                                    </a>
+                                }
+                            </td>
+                            <td>@rental.StartDate.ToString("dd MMM yyyy")</td>
+                            <td>@rental.EndDate.ToString("dd MMM yyyy")</td>
+                            <td>@duration day(s)</td>
+                            <td>€@(rental.Car?.PricePerDay.ToString("F2") ?? "—")</td>
+                            <td class="fw-bold">€@rental.TotalPrice.ToString("F2")</td>
+                            <td class="text-muted small">@rental.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                            <td>
+                                @if (rental.Status == "CanceledByAdmin")
+                                {
+                                    <span class="badge bg-danger" title="Canceled by admin due to car unavailability">Canceled (Admin)</span>
+                                }
+                                else if (rental.Status == "Canceled")
+                                {
+                                    <span class="badge bg-warning text-dark">Canceled</span>
+                                }
+                                else if (isActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else if (isFuture)
+                                {
+                                    <span class="badge bg-primary">Upcoming</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Completed</span>
+                                }
+                            </td>
+                            <td>
+                                @if (isFuture && rental.Status == "Active")
+                                {
+                                    <form asp-action="CancelBooking" asp-route-id="@rental.Id" method="post"
+                                          onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h3 style="color: var(--rr-primary);">@activeBookings.Count()</h3>
+                    <p class="text-muted mb-0">Active/Completed Rentals</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-success">€@activeBookings.Sum(r => r.TotalPrice).ToString("F2")</h3>
+                    <p class="text-muted mb-0">Total Spent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h3 style="color: var(--rr-accent);">@activeBookings.Sum(r => (r.EndDate - r.StartDate).Days)</h3>
+                    <p class="text-muted mb-0">Total Days Rented</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,8 +1,155 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using CarRental.Data
+@inject ApplicationDbContext DbContext
+@{
+    ViewData["Title"] = "Welcome";
+    var locations = DbContext.Cars.Select(c => c.Location).Distinct().OrderBy(l => l).ToList();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section text-center px-4">
+    <img src="~/images/logo.png" alt="RoadRunners" class="hero-logo mb-3" />
+    <h1>Welcome to RoadRunners</h1>
+    <p class="lead mb-0">Your premium car rental service — browse, book, and hit the road.</p>
+</div>
+
+<!-- Search Wizard -->
+<div class="card shadow mb-4">
+    <div class="card-header card-header-accent">
+        <h5 class="mb-0">Find Your Perfect Car</h5>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Car" asp-action="Index" method="get" id="search-wizard-form">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="wizardLocation" class="form-label fw-bold">Location</label>
+                    <select name="location" id="wizardLocation" class="form-select" required>
+                        <option value="">-- Select City --</option>
+                        @foreach (var loc in locations)
+                        {
+                            <option value="@loc">@loc</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="wizardStart" class="form-label fw-bold">Pick-up Date</label>
+                    <input type="date" name="startDate" id="wizardStart" class="form-control"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="wizardEnd" class="form-label fw-bold">Return Date</label>
+                    <input type="date" name="endDate" id="wizardEnd" class="form-control"
+                           min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                           value="@DateTime.Today.AddDays(3).ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-3">
+                    <label for="wizardQuery" class="form-label fw-bold">Brand / Model (optional)</label>
+                    <input type="text" name="query" id="wizardQuery" class="form-control"
+                           placeholder="e.g. BMW X5, Audi, Dacia" />
+                </div>
+                <div class="col-md-2">
+                    <label for="wizardSeats" class="form-label fw-bold">Seats</label>
+                    <select name="seats" id="wizardSeats" class="form-select">
+                        <option value="">Any</option>
+                        <option value="2">2 seats</option>
+                        <option value="5">5 seats</option>
+                        <option value="7">7+ seats</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3 text-end">
+                <button type="submit" class="btn btn-accent btn-lg">Find Cars</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm feature-card h-100">
+            <div class="card-body">
+                <h5>Browse Cars</h5>
+                <p class="text-muted">Explore our fleet of premium vehicles. Filter by brand, location, and find the perfect car for your trip.</p>
+                <a asp-controller="Car" asp-action="Index" class="btn btn-outline-primary">View Fleet</a>
+            </div>
+        </div>
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Client"))
+    {
+        <div class="col-md-4">
+            <div class="card shadow-sm feature-card h-100">
+                <div class="card-body">
+                    <h5>My Account</h5>
+                    <p class="text-muted">View your account balance, booking history, and manage your reservations.</p>
+                    <a asp-controller="Account" asp-action="MyAccount" class="btn btn-outline-primary">My Account</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+    {
+        <div class="col-md-4">
+            <div class="card shadow-sm feature-card h-100">
+                <div class="card-body">
+                    <h5>Admin Dashboard</h5>
+                    <p class="text-muted">Manage your fleet — add, edit, or remove cars. Set unavailability periods.</p>
+                    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary">Dashboard</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm feature-card h-100">
+                <div class="card-body">
+                    <h5>Rental Log</h5>
+                    <p class="text-muted">View all bookings across the platform. Filter by period, see revenue and client statistics.</p>
+                    <a asp-controller="Admin" asp-action="RentalLog" class="btn btn-outline-primary">Rental Log</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="col-md-4">
+            <div class="card shadow-sm feature-card h-100">
+                <div class="card-body">
+                    <h5>Get Started</h5>
+                    <p class="text-muted">Create a free account to start booking cars and receive a welcome bonus, or log in to access your dashboard.</p>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary me-2">Sign Up</a>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">Login</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header card-header-rr">
+        <h5 class="mb-0">How It Works</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h2 style="color: var(--rr-accent);">1</h2>
+                <h6>Search</h6>
+                <p class="text-muted small">Enter your city, dates, and preferences to find available cars.</p>
+            </div>
+            <div class="col-md-3">
+                <h2 style="color: var(--rr-accent);">2</h2>
+                <h6>Select & Add to Cart</h6>
+                <p class="text-muted small">Choose your dates on the calendar and add one or more cars to your cart.</p>
+            </div>
+            <div class="col-md-3">
+                <h2 style="color: var(--rr-accent);">3</h2>
+                <h6>Pay</h6>
+                <p class="text-muted small">Review your cart, enter payment details, and optionally use your account balance.</p>
+            </div>
+            <div class="col-md-3">
+                <h2 style="color: var(--rr-accent);">4</h2>
+                <h6>Drive</h6>
+                <p class="text-muted small">Pick up your car and hit the road! Enjoy tiered discounts for longer stays.</p>
+            </div>
+        </div>
+    </div>
 </div>

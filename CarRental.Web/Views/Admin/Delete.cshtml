@@ -1,0 +1,55 @@
+@model Car
+@{
+    ViewData["Title"] = $"Delete {Model.Brand} {Model.Model}";
+    bool isCurrentlyUnavailable = ViewBag.IsCurrentlyUnavailable ?? false;
+}
+
+<h1 class="mb-4">Delete Car</h1>
+
+<div class="card shadow" style="max-width: 600px;">
+    <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">Confirm Deletion</h4>
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete this car?</p>
+
+        <table class="table table-borderless">
+            <tr><th>Brand:</th><td>@Model.Brand</td></tr>
+            <tr><th>Model:</th><td>@Model.Model</td></tr>
+            <tr><th>Location:</th><td>@Model.Location</td></tr>
+            <tr><th>License Plate:</th><td><code>@Model.LicensePlate</code></td></tr>
+            <tr><th>Seats:</th><td>@Model.Seats</td></tr>
+            <tr><th>Price/Day:</th><td>€@Model.PricePerDay</td></tr>
+        </table>
+
+        @if (!isCurrentlyUnavailable)
+        {
+            <div class="alert alert-warning">
+                <strong>Cannot delete!</strong> You must first mark this car as <strong>unavailable</strong> 
+                (covering today's date) before deleting it. This prevents clients from booking during the deletion process.
+                <br /><br />
+                Go to <a asp-controller="Car" asp-action="Details" asp-route-id="@Model.Id" class="alert-link">
+                    the car's detail page
+                </a> and set an unavailability period that includes today.
+            </div>
+            <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>Note:</strong> This car is currently marked as unavailable. 
+                Deleting it will:
+                <ul class="mb-0 mt-1">
+                    <li>Hide the car from the browsing list</li>
+                    <li>Cancel all future active bookings with <strong>120% refund</strong> to client balance</li>
+                    <li>Preserve all rental history in the Rental Log</li>
+                </ul>
+            </div>
+            <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+            </form>
+        }
+    </div>
+</div>
