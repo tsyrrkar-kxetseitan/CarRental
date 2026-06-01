@@ -1,0 +1,148 @@
+@model CarFormViewModel
+@{
+    ViewData["Title"] = "Add New Car";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Admin Dashboard</a></li>
+        <li class="breadcrumb-item active">Add New Car</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">Add New Car</h3>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Brand" class="form-label fw-bold"></label>
+                            <input asp-for="Brand" class="form-control" placeholder="e.g. BMW, Mercedes, Audi" />
+                            <span asp-validation-for="Brand" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Model" class="form-label fw-bold"></label>
+                            <input asp-for="Model" class="form-control" placeholder="e.g. Series 3, C-Class, A4" />
+                            <span asp-validation-for="Model" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="PricePerDay" class="form-label fw-bold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">€</span>
+                                <input asp-for="PricePerDay" class="form-control" type="number" step="0.01" min="0.01" />
+                            </div>
+                            <span asp-validation-for="PricePerDay" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Seats" class="form-label fw-bold"></label>
+                            <select asp-for="Seats" class="form-select">
+                                <option value="2">2 seats</option>
+                                <option value="5" selected>5 seats</option>
+                                <option value="7">7 seats</option>
+                                <option value="8">8 seats</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Location" class="form-label fw-bold"></label>
+                            <select asp-for="Location" class="form-select">
+                                <option value="">-- Select --</option>
+                                <option value="București">București</option>
+                                <option value="Cluj-Napoca">Cluj-Napoca</option>
+                                <option value="Brașov">Brașov</option>
+                                <option value="Iași">Iași</option>
+                                <option value="Timișoara">Timișoara</option>
+                            </select>
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="LicensePlate" class="form-label fw-bold"></label>
+                        <input asp-for="LicensePlate" class="form-control" placeholder="e.g. CJ04ABC, B123XYZ" />
+                        <span asp-validation-for="LicensePlate" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Short description of the car..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label fw-bold"></label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/car.jpg (optional)" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+
+                    <hr />
+                    <h5 class="fw-bold mb-3" style="color: var(--rr-primary);">Specifications (Optional)</h5>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Chassis" class="form-label fw-bold"></label>
+                            <select asp-for="Chassis" class="form-select">
+                                <option value="">-- Select --</option>
+                                <option value="Sedan">Sedan</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Hatchback">Hatchback</option>
+                                <option value="Coupe">Coupe</option>
+                                <option value="MPV">MPV</option>
+                                <option value="Wagon">Wagon</option>
+                                <option value="Convertible">Convertible</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="FabricationYear" class="form-label fw-bold"></label>
+                            <input asp-for="FabricationYear" class="form-control" type="number" min="1990" max="2030" placeholder="e.g. 2024" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Horsepower" class="form-label fw-bold"></label>
+                            <input asp-for="Horsepower" class="form-control" type="number" min="1" placeholder="e.g. 190" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="EngineType" class="form-label fw-bold"></label>
+                            <input asp-for="EngineType" class="form-control" placeholder="e.g. 2.0L Diesel" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Transmission" class="form-label fw-bold"></label>
+                            <select asp-for="Transmission" class="form-select">
+                                <option value="">-- Select --</option>
+                                <option value="Manual">Manual</option>
+                                <option value="Automatic">Automatic</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="FuelConsumption" class="form-label fw-bold"></label>
+                            <input asp-for="FuelConsumption" class="form-control" placeholder="e.g. 6.5 L/100km" />
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success btn-lg">Create Car</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

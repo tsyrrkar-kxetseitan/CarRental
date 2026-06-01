@@ -1,0 +1,146 @@
+@model IEnumerable<Car>
+@using CarRental.Web.ViewModels
+@{
+    ViewData["Title"] = "Browse Cars";
+    var search = ViewBag.Search as SearchViewModel ?? new SearchViewModel();
+    var locations = ViewBag.Locations as List<string> ?? new List<string>();
+    var brands = ViewBag.Brands as List<string> ?? new List<string>();
+    var cartCount = (int)(ViewBag.CartCount ?? 0);
+
+    // Group by Brand+Model for display, counting available units
+    var grouped = Model.GroupBy(c => new { c.Brand, c.Model })
+        .Select(g => new {
+            Brand = g.Key.Brand,
+            Model = g.Key.Model,
+            FirstCar = g.First(),
+            Count = g.Count(),
+            Locations = g.Select(c => c.Location).Distinct().OrderBy(l => l).ToList(),
+            MinPrice = g.Min(c => c.PricePerDay),
+            Seats = g.First().Seats
+        }).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Browse Cars</h1>
+    @if (cartCount > 0)
+    {
+        <a asp-controller="Car" asp-action="Cart" class="btn btn-accent">
+            Cart (@cartCount)
+        </a>
+    }
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="query" class="form-label fw-bold">Search</label>
+                <input type="text" name="query" id="query" class="form-control"
+                       placeholder="e.g. BMW X5, Audi A4..."
+                       value="@search.Query" />
+            </div>
+            <div class="col-md-2">
+                <label for="location" class="form-label fw-bold">Location</label>
+                <select name="location" id="location" class="form-select">
+                    <option value="">All Cities</option>
+                    @foreach (var loc in locations)
+                    {
+                        <option value="@loc" selected="@(loc == search.Location)">@loc</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="startDate" class="form-label fw-bold">Pick-up</label>
+                <input type="date" name="startDate" id="startDate" class="form-control"
+                       value="@(search.StartDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-2">
+                <label for="endDate" class="form-label fw-bold">Return</label>
+                <input type="date" name="endDate" id="endDate" class="form-control"
+                       value="@(search.EndDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-1">
+                <label for="seats" class="form-label fw-bold">Seats</label>
+                <select name="seats" id="seats" class="form-select">
+                    <option value="">Any</option>
+                    <option value="2" selected="@(search.Seats == 2)">2</option>
+                    <option value="5" selected="@(search.Seats == 5)">5</option>
+                    <option value="7" selected="@(search.Seats == 7)">7+</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Find Cars</button>
+                <a asp-action="Index" class="btn btn-outline-secondary w-100 mt-1">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!grouped.Any())
+{
+    <div class="alert alert-info">No cars found matching your criteria.</div>
+}
+else
+{
+    <p class="text-muted mb-3">
+        Showing @grouped.Count() model(s) — @Model.Count() car(s) available
+        @if (!string.IsNullOrEmpty(search.Location)) { <span>in <strong>@search.Location</strong></span> }
+    </p>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var g in grouped)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm car-card">
+                    <div class="card-img-top d-flex align-items-center justify-content-center wiki-img-container"
+                         style="height: 200px; background: var(--rr-light); overflow: hidden;"
+                         data-brand="@g.Brand" data-model="@g.Model">
+                        <span class="fs-1" style="color: var(--rr-primary);">CAR</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@g.Brand @g.Model</h5>
+                        <p class="card-text text-muted small">
+                            @g.Seats seats
+                            &middot; @g.Count unit(s) available
+                            &middot; @string.Join(", ", g.Locations)
+                        </p>
+                        <p class="card-text text-muted">
+                            @(g.FirstCar.Description?.Length > 100 ? g.FirstCar.Description.Substring(0, 100) + "..." : g.FirstCar.Description)
+                        </p>
+                        <span class="fs-5 fw-bold" style="color: var(--rr-accent);">from €@g.MinPrice/day</span>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a asp-action="Details"
+                           asp-route-brand="@g.Brand" asp-route-model="@g.Model"
+                           asp-route-location="@search.Location"
+                           asp-route-searchStart="@(search.StartDate?.ToString("yyyy-MM-dd"))"
+                           asp-route-searchEnd="@(search.EndDate?.ToString("yyyy-MM-dd"))"
+                           class="btn btn-outline-primary w-100">
+                            View Details & Availability
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Auto-load Wikipedia images for each car card
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.wiki-img-container').forEach(function (container) {
+                var brand = container.getAttribute('data-brand');
+                var model = container.getAttribute('data-model');
+                fetch('/Car/GetWikiImage?brand=' + encodeURIComponent(brand) + '&model=' + encodeURIComponent(model))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.imageUrl) {
+                            container.innerHTML = '<img src="' + data.imageUrl + '" alt="' + brand + ' ' + model + '" style="width:100%;height:100%;object-fit:cover;" />';
+                        }
+                    })
+                    .catch(() => {});
+            });
+        });
+    </script>
+}

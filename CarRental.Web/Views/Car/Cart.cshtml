@@ -1,0 +1,220 @@
+@model CarRental.Web.ViewModels.CartViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Cart & Payment";
+    var paymentSuccess = TempData["PaymentSuccess"] as string;
+    var csrfToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<h1 class="mb-4">Cart & Payment</h1>
+
+<!-- Success Popup Modal -->
+@if (!string.IsNullOrEmpty(paymentSuccess))
+{
+    <div class="modal fade show" id="paymentSuccessModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Payment Confirmed</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div style="font-size: 4rem; color: #28a745;">&#10003;</div>
+                    <p class="fs-5 mt-2">@paymentSuccess</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <a asp-controller="Account" asp-action="MyAccount" class="btn btn-primary">View My Account</a>
+                    <a asp-controller="Car" asp-action="Index" class="btn btn-outline-secondary">Continue Browsing</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!Model.Items.Any() && string.IsNullOrEmpty(paymentSuccess))
+{
+    <div class="alert alert-info">
+        <h5 class="alert-heading">Your cart is empty</h5>
+        <p class="mb-0">
+            <a asp-controller="Car" asp-action="Index" class="alert-link">Browse cars</a> to start adding bookings.
+        </p>
+    </div>
+}
+else if (Model.Items.Any())
+{
+    <!-- Cart Items -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-rr">
+            <h5 class="mb-0">Your Bookings (@Model.Items.Count)</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-header-rr mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Car</th>
+                            <th>License Plate</th>
+                            <th>Location</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Price/Day</th>
+                            <th>Total</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            var item = Model.Items[i];
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td><a href="/Car/Details/@item.CarId" class="fw-bold text-decoration-none" style="color: var(--rr-primary);">@item.CarBrand @item.CarModel</a></td>
+                                <td><code>@item.LicensePlate</code></td>
+                                <td>@item.Location</td>
+                                <td>@item.StartDate.ToString("dd MMM") — @item.EndDate.ToString("dd MMM yyyy")</td>
+                                <td>@item.TotalDays</td>
+                                <td>€@item.PricePerDay.ToString("F2")</td>
+                                <td class="fw-bold">€@item.TotalPrice.ToString("F2")</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-remove-index="@i" onclick="submitRemoveForm(this)">X</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-active">
+                            <td colspan="7" class="text-end fw-bold">Subtotal:</td>
+                            <td class="fw-bold fs-5" style="color: var(--rr-accent);">€@Model.Subtotal.ToString("F2")</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-accent">
+            <h5 class="mb-0">Payment Details</h5>
+        </div>
+        <div class="card-body">
+            <form action="/Car/ConfirmPayment" method="post" id="payment-form">
+                <input type="hidden" name="__RequestVerificationToken" value="@csrfToken" />
+
+                <!-- Account Balance Option -->
+                <div class="alert alert-info d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Account Balance:</strong> €@Model.AccountBalance.ToString("F2")
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="useBalance"
+                               name="UseBalance" value="true"
+                               @(Model.AccountBalance > 0 ? "" : "disabled")
+                               onchange="updateTotal()" />
+                        <label class="form-check-label fw-bold" for="useBalance">Use balance</label>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="cardNumber" class="form-label fw-bold">Card Number</label>
+                        <input type="text" name="CardNumber" id="cardNumber" class="form-control"
+                               placeholder="1234567890123456" maxlength="16"
+                               pattern="\d{16}" inputmode="numeric"
+                               required oninput="this.value=this.value.replace(/\D/g,'')" />
+                        <small class="text-muted">16 digits, numbers only</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cardHolder" class="form-label fw-bold">Card Holder Name</label>
+                        <input type="text" name="CardHolder" id="cardHolder" class="form-control"
+                               placeholder="JOHN DOE"
+                               pattern="[a-zA-Z\u00c0-\u00ff\s\-'\.]+"
+                               required oninput="this.value=this.value.replace(/[0-9]/g,'')" />
+                        <small class="text-muted">Letters only, no numbers</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="expiryDate" class="form-label fw-bold">Expiry Date</label>
+                        <input type="text" name="ExpiryDate" id="expiryDate" class="form-control"
+                               placeholder="MM/YY" maxlength="5"
+                               pattern="(0[1-9]|1[0-2])\/\d{2}"
+                               required />
+                        <small id="expiryHint" class="text-muted">Format: MM/YY (e.g. 08/27)</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cvv" class="form-label fw-bold">CVC/CVV</label>
+                        <input type="text" name="Cvv" id="cvv" class="form-control"
+                               placeholder="123" maxlength="3"
+                               pattern="\d{3}" inputmode="numeric"
+                               required oninput="this.value=this.value.replace(/\D/g,'')" />
+                        <small class="text-muted">Exactly 3 digits</small>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 text-muted" id="balanceDeductionLine" style="display: none;">
+                            Balance deduction: <strong id="balanceDeductionAmount">€0.00</strong>
+                        </p>
+                        <p class="mb-0 fs-4 fw-bold">
+                            Amount to pay: <span id="amountDue" style="color: var(--rr-accent);">€@Model.Subtotal.ToString("F2")</span>
+                        </p>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        Confirm Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <a asp-controller="Car" asp-action="Index" class="btn btn-outline-primary">Continue Browsing</a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        var subtotal = @Model.Subtotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var accountBalance = @Model.AccountBalance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var cartCsrfToken = '@csrfToken';
+
+        function updateTotal() {
+            var useBalance = document.getElementById('useBalance').checked;
+            var deduction = useBalance ? Math.min(accountBalance, subtotal) : 0;
+            var due = subtotal - deduction;
+
+            document.getElementById('amountDue').textContent = '€' + due.toFixed(2);
+            var deductLine = document.getElementById('balanceDeductionLine');
+            var deductAmount = document.getElementById('balanceDeductionAmount');
+
+            if (useBalance && deduction > 0) {
+                deductLine.style.display = 'block';
+                deductAmount.textContent = '€' + deduction.toFixed(2);
+            } else {
+                deductLine.style.display = 'none';
+            }
+        }
+
+        function submitRemoveForm(btn) {
+            var index = btn.getAttribute('data-remove-index');
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Car/RemoveFromCart';
+            var tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = cartCsrfToken;
+            form.appendChild(tokenInput);
+            var indexInput = document.createElement('input');
+            indexInput.type = 'hidden';
+            indexInput.name = 'index';
+            indexInput.value = index;
+            form.appendChild(indexInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+}

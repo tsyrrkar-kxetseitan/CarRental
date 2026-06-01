@@ -1,0 +1,197 @@
+/* ============================================================
+   Rental Calendar Styles
+   - Client view: single color (pink) for booked days
+   - Admin view: multi-color for per-user bookings with legend
+   ============================================================ */
+
+.rental-calendar {
+    font-family: 'Segoe UI', sans-serif;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.rental-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #343a40;
+    color: #fff;
+    padding: 12px 16px;
+}
+
+.rental-calendar-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.rental-calendar-header button {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.rental-calendar-header button:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.rental-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.rental-calendar-grid .day-header {
+    background: #f8f9fa;
+    text-align: center;
+    padding: 8px 4px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #6c757d;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.rental-calendar-grid .day-cell {
+    position: relative;
+    min-height: 60px;
+    padding: 4px;
+    border: 1px solid #eee;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+}
+
+.rental-calendar-grid .day-cell .day-number {
+    font-weight: 600;
+    color: #333;
+    position: relative;
+    z-index: 2;
+}
+
+.rental-calendar-grid .day-cell.other-month {
+    background: #f9f9f9;
+}
+
+.rental-calendar-grid .day-cell.other-month .day-number {
+    color: #ccc;
+}
+
+.rental-calendar-grid .day-cell.today {
+    outline: 2px solid #0d6efd;
+    outline-offset: -2px;
+}
+
+/* Single-color booking bar (client view) */
+.rental-calendar-grid .day-cell .booking-bar {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 24px;
+    transform: translateY(-50%);
+    border-radius: 12px;
+    opacity: 0.65;
+    z-index: 1;
+}
+
+/* Booking start — rounded left */
+.rental-calendar-grid .day-cell .booking-bar.bar-start {
+    left: 40%;
+    border-radius: 12px 0 0 12px;
+}
+
+/* Booking end — rounded right */
+.rental-calendar-grid .day-cell .booking-bar.bar-end {
+    right: 40%;
+    border-radius: 0 12px 12px 0;
+}
+
+/* Booking middle — no rounding */
+.rental-calendar-grid .day-cell .booking-bar.bar-middle {
+    border-radius: 0;
+}
+
+/* Single day booking — fully rounded */
+.rental-calendar-grid .day-cell .booking-bar.bar-single {
+    left: 20%;
+    right: 20%;
+    border-radius: 12px;
+}
+
+/* Available day hover for client rental form */
+.rental-calendar-grid .day-cell.available:hover {
+    background: #e8f5e9;
+    cursor: pointer;
+}
+
+.rental-calendar-grid .day-cell.selected-range {
+    background: #c8e6c9 !important;
+}
+
+.rental-calendar-grid .day-cell.selected-start,
+.rental-calendar-grid .day-cell.selected-end {
+    background: #66bb6a !important;
+}
+
+.rental-calendar-grid .day-cell.selected-start .day-number,
+.rental-calendar-grid .day-cell.selected-end .day-number {
+    color: #fff;
+}
+
+/* Admin legend */
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.calendar-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+}
+
+.calendar-legend .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    opacity: 0.65;
+}
+
+/* Admin multi-booking stacking */
+.rental-calendar-grid .day-cell .booking-bar-stacked {
+    position: relative;
+    height: 8px;
+    margin: 1px 0;
+    border-radius: 4px;
+    opacity: 0.7;
+    z-index: 1;
+}
+
+/* Tooltip on hover */
+.rental-calendar-grid .day-cell .booking-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.rental-calendar-grid .day-cell:hover .booking-tooltip {
+    display: block;
+}

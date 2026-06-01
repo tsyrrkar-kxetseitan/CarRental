@@ -1,0 +1,47 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header card-header-rr text-center">
+                <h3 class="mb-0">Login</h3>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label fw-bold"></label>
+                        <input asp-for="Username" class="form-control" placeholder="Enter your username" autofocus />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-bold"></label>
+                        <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                    </div>
+                </form>
+
+                <hr />
+                <p class="text-muted small text-center mb-0">
+                    <strong>Demo Accounts:</strong><br />
+                    Admin: <code>admin</code> / <code>admin123</code><br />
+                    Client: <code>client</code> / <code>123</code>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
